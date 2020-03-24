@@ -4,6 +4,10 @@
 #define MAX_REPEAT_COUNT (0x3f)
 
 namespace compress {
+    enum TemplateType {
+        Repeat, Zero
+    };
+
     class Compressor {
     public:
         explicit Compressor(CompressorConfig *config, HashManager *hashManager);
@@ -13,7 +17,9 @@ namespace compress {
 
         void loadNextData();
 
-        void processRepeat();
+        void updateForNextSubBlock();
+
+        void addRepeatTemplate();
 
         CompressorConfig *config;
         HashManager *hashManager;
@@ -22,7 +28,6 @@ namespace compress {
         uint8_t repeat_count;
         uint64_t data8;
         uint32_t data4[2];
-
         uint16_t data2[4];
     };
 }
