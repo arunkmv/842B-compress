@@ -1,12 +1,15 @@
 #include "CompressorConfig.h"
 #include "HashManager.h"
 
+#define OP_REPEAT	     (0x1B)
+#define OP_ZEROS	     (0x1C)
+
+#define OP_BITS	         (5)
+#define REPEAT_BITS	     (6)
+
 #define MAX_REPEAT_COUNT (0x3f)
 
 namespace compress {
-    enum TemplateType {
-        Repeat, Zero
-    };
 
     class Compressor {
     public:
@@ -15,11 +18,15 @@ namespace compress {
     private:
         void process(uint8_t *input, uint8_t *output);
 
+        void addToOutput(uint64_t data, uint8_t bits);
+
         void loadNextData();
 
         void updateForNextSubBlock();
 
         void addRepeatTemplate();
+
+        void addZeroTemplate();
 
         CompressorConfig *config;
         HashManager *hashManager;

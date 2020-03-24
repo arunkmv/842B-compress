@@ -7,6 +7,10 @@ compress::Compressor::Compressor(compress::CompressorConfig *config, compress::H
     this->repeat_count = 0;
 }
 
+void compress::Compressor::addToOutput(uint64_t data, uint8_t bits) {
+
+}
+
 void compress::Compressor::loadNextData() {
     this->data8 = ((uint64_t *) this->in)[0];
     this->data4[0] = ((uint32_t *) this->in)[0];
@@ -23,7 +27,12 @@ void compress::Compressor::updateForNextSubBlock() {
 }
 
 void compress::Compressor::addRepeatTemplate() {
+    addToOutput(OP_REPEAT, OP_BITS);
+    addToOutput(this->repeat_count, REPEAT_BITS);
+}
 
+void compress::Compressor::addZeroTemplate() {
+    this->addToOutput(OP_ZEROS, OP_BITS);
 }
 
 void compress::Compressor::process(uint8_t *input, uint8_t *output) {
@@ -31,7 +40,8 @@ void compress::Compressor::process(uint8_t *input, uint8_t *output) {
     this->in = input;
     this->out = output;
 
-    this->last = ~(*(uint64_t *) input);                     //Last for initial sub-block made different to next
+    //Last for initial sub-block made different to next
+    this->last = ~(*(uint64_t *) input);
 
     for (int i = 0; i < config->subBlockCount; i++) {
 
@@ -39,7 +49,7 @@ void compress::Compressor::process(uint8_t *input, uint8_t *output) {
 
         loadNextData();
 
-        //Check and add template for repeated sub blocks
+     //Check and add template for repeated sub blocks
         if (this->last == this->next) {
             if (++this->repeat_count <= MAX_REPEAT_COUNT) {
                 updateForNextSubBlock();
@@ -52,6 +62,11 @@ void compress::Compressor::process(uint8_t *input, uint8_t *output) {
                 updateForNextSubBlock();
                 continue;
             }
+        }
+
+     //Check if sub block is zero
+        if(next == 0) {
+            addZeroTemplate();
         }
     }
 }
