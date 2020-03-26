@@ -48,7 +48,10 @@ void compress::Compressor::addToOutput(uint64_t data, uint8_t bits) {
 }
 
 void compress::Compressor::splitAdd(uint64_t data, uint8_t bits, int splitAt) {
+    uint64_t lowerBitMask = (((uint64_t)1 << splitAt) - 1);
 
+    addToOutput(data >> splitAt, bits - splitAt);
+    addToOutput(data & lowerBitMask, splitAt);
 }
 
 void compress::Compressor::loadNextData() {
