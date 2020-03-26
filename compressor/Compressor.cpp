@@ -1,13 +1,53 @@
 #include <stdint-gcc.h>
 #include "Compressor.h"
 
-compress::Compressor::Compressor(compress::CompressorConfig *config, compress::HashManager *hashManager) {
+compress::Compressor::Compressor(compress::CompressorConfig *config) {
     this->config = config;
-    this->hashManager = hashManager;
     this->repeat_count = 0;
+    this->currBit = 0;
 }
 
+static uint8_t bit_mask[8] = {0x00, 0x80, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe};
+
 void compress::Compressor::addToOutput(uint64_t data, uint8_t bits) {
+    int nBits = this->currBit + bits;
+    //Offset of bit position to the nearest multiple of 8
+    int offset = ((nBits - 1) | 7) + 1;
+    uint64_t outVal;
+    uint8_t *outPtr = this->out;
+
+    if (nBits > 64) {
+        splitAdd(data, bits, 32);
+    }
+
+    outVal = *outPtr & bit_mask[this->currBit];
+    data <<= offset;
+
+    if (nBits <= 8)
+        *outPtr = outVal | data;
+    else if (nBits <= 16)
+        *(uint16_t *)outPtr = asBigEndian<uint16_t>(outVal << 8 | data);
+    else if (nBits <= 24)
+        *(uint32_t *)outPtr = asBigEndian<uint32_t>(outVal << 24 | data << 8);
+    else if (nBits <= 32)
+        *(uint32_t *)outPtr = asBigEndian<uint32_t>(outVal << 24 | data);
+    else if (nBits <= 40)
+        *(uint64_t *)outPtr = asBigEndian<uint64_t>(outVal << 56 | data << 24);
+    else if (nBits <= 48)
+        *(uint64_t *)outPtr = asBigEndian<uint64_t>(outVal << 56 | data << 16);
+    else if (nBits <= 56)
+        *(uint64_t *)outPtr = asBigEndian<uint64_t>(outVal << 56 | data << 8);
+    else
+        *(uint64_t *)outPtr = asBigEndian<uint64_t>(outVal << 56 | data);
+
+    this->currBit = nBits;
+    if (this->currBit > 7) {
+        this->out += this->currBit / 8;
+        this->currBit %= 8;
+    }
+}
+
+void compress::Compressor::splitAdd(uint64_t data, uint8_t bits, int splitAt) {
 
 }
 
@@ -49,7 +89,7 @@ void compress::Compressor::process(uint8_t *input, uint8_t *output) {
 
         loadNextData();
 
-     //Check and add template for repeated sub blocks
+        //Check and add template for repeated sub blocks
         if (this->last == this->next) {
             if (++this->repeat_count <= MAX_REPEAT_COUNT) {
                 updateForNextSubBlock();
@@ -64,8 +104,8 @@ void compress::Compressor::process(uint8_t *input, uint8_t *output) {
             }
         }
 
-     //Check if sub block is zero
-        if(next == 0) {
+        //Check if sub block is zero
+        if (next == 0) {
             addZeroTemplate();
         }
     }
