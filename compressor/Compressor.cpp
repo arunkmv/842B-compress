@@ -1,4 +1,5 @@
 #include <stdint-gcc.h>
+#include <stdio.h>
 #include "Compressor.h"
 
 compress::Compressor::Compressor(compress::CompressorConfig *config) {
@@ -12,7 +13,7 @@ static uint8_t bit_mask[8] = {0x00, 0x80, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe};
 void compress::Compressor::addToOutput(uint64_t data, uint8_t bits) {
     int nBits = this->currBit + bits;
     //Offset of bit position to the nearest multiple of 8
-    int offset = ((nBits - 1) | 7) + 1;
+    int offset = (((nBits - 1) | 7) + 1) - nBits;
     uint64_t outVal;
     uint8_t *outPtr = this->out;
 
@@ -26,19 +27,19 @@ void compress::Compressor::addToOutput(uint64_t data, uint8_t bits) {
     if (nBits <= 8)
         *outPtr = outVal | data;
     else if (nBits <= 16)
-        *(uint16_t *)outPtr = asBigEndian<uint16_t>(outVal << 8 | data);
+        *(uint16_t *) outPtr = asBigEndian<uint16_t>(outVal << 8 | data);
     else if (nBits <= 24)
-        *(uint32_t *)outPtr = asBigEndian<uint32_t>(outVal << 24 | data << 8);
+        *(uint32_t *) outPtr = asBigEndian<uint32_t>(outVal << 24 | data << 8);
     else if (nBits <= 32)
-        *(uint32_t *)outPtr = asBigEndian<uint32_t>(outVal << 24 | data);
+        *(uint32_t *) outPtr = asBigEndian<uint32_t>(outVal << 24 | data);
     else if (nBits <= 40)
-        *(uint64_t *)outPtr = asBigEndian<uint64_t>(outVal << 56 | data << 24);
+        *(uint64_t *) outPtr = asBigEndian<uint64_t>(outVal << 56 | data << 24);
     else if (nBits <= 48)
-        *(uint64_t *)outPtr = asBigEndian<uint64_t>(outVal << 56 | data << 16);
+        *(uint64_t *) outPtr = asBigEndian<uint64_t>(outVal << 56 | data << 16);
     else if (nBits <= 56)
-        *(uint64_t *)outPtr = asBigEndian<uint64_t>(outVal << 56 | data << 8);
+        *(uint64_t *) outPtr = asBigEndian<uint64_t>(outVal << 56 | data << 8);
     else
-        *(uint64_t *)outPtr = asBigEndian<uint64_t>(outVal << 56 | data);
+        *(uint64_t *) outPtr = asBigEndian<uint64_t>(outVal << 56 | data);
 
     this->currBit = nBits;
     if (this->currBit > 7) {
@@ -48,7 +49,7 @@ void compress::Compressor::addToOutput(uint64_t data, uint8_t bits) {
 }
 
 void compress::Compressor::splitAdd(uint64_t data, uint8_t bits, int splitAt) {
-    uint64_t lowerBitMask = (((uint64_t)1 << splitAt) - 1);
+    uint64_t lowerBitMask = (((uint64_t) 1 << splitAt) - 1);
 
     addToOutput(data >> splitAt, bits - splitAt);
     addToOutput(data & lowerBitMask, splitAt);
@@ -78,6 +79,10 @@ void compress::Compressor::addZeroTemplate() {
     this->addToOutput(OP_ZEROS, OP_BITS);
 }
 
+void compress::Compressor::processNext() {
+
+}
+
 void compress::Compressor::process(uint8_t *input, uint8_t *output) {
     this->inbeg = input;
     this->in = input;
@@ -88,13 +93,13 @@ void compress::Compressor::process(uint8_t *input, uint8_t *output) {
 
     for (int i = 0; i < config->subBlockCount; i++) {
 
-        this->next = (*(uint64_t *) input);
+        this->next = (*(uint64_t *) this->in);
 
         loadNextData();
 
         //Check and add template for repeated sub blocks
         if (this->last == this->next) {
-            if (++this->repeat_count <= MAX_REPEAT_COUNT) {
+            if (++(this->repeat_count) <= MAX_REPEAT_COUNT) {
                 updateForNextSubBlock();
                 continue;
             }
@@ -110,6 +115,10 @@ void compress::Compressor::process(uint8_t *input, uint8_t *output) {
         //Check if sub block is zero
         if (next == 0) {
             addZeroTemplate();
+        } else {
+            processNext();
         }
+
+        updateForNextSubBlock();
     }
 }

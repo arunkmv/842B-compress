@@ -15,6 +15,8 @@ namespace compress {
     public:
         explicit Compressor(CompressorConfig *config);
 
+        void process(uint8_t *input, uint8_t *output);
+
     private:
         CompressorConfig *config;
         HashManager *hashManager;
@@ -25,8 +27,6 @@ namespace compress {
         uint64_t data8;
         uint32_t data4[2];
         uint16_t data2[4];
-
-        void process(uint8_t *input, uint8_t *output);
 
         void addToOutput(uint64_t data, uint8_t bits);
 
@@ -59,5 +59,7 @@ namespace compress {
 
             return dest.u;
         }
+
+        void processNext();
     };
 }
