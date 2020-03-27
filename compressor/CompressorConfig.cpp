@@ -16,5 +16,5 @@ compress::CompressorConfig::CompressorConfig() {
 bool compress::CompressorConfig::findEndianness() {
     short int word = 0x0001;
     char *byte = (char *) &word;
-    return byte[0] != 0;                        //Returns false if CPU is Little Endian and true if Big Endian
+    return byte[0] == 0;                        //Returns false if CPU is Little Endian and true if Big Endian
 }
