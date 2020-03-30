@@ -1,14 +1,6 @@
 #include "HashManager.h"
 #include <climits>
 
-#define OP_REPEAT         (0x1B)
-#define OP_ZEROS          (0x1C)
-
-#define OP_BITS             (5)
-#define REPEAT_BITS         (6)
-
-#define MAX_REPEAT_COUNT  (0x3f)
-
 namespace compress {
 
     class Compressor {
@@ -24,9 +16,10 @@ namespace compress {
         uint64_t last, next;
         uint8_t currBit;
         uint8_t repeat_count;
-        uint64_t data8;
+        uint64_t data8[1];
         uint32_t data4[2];
         uint16_t data2[4];
+        int phrase8[1], phrase4[2], phrase2[4];
 
         void addToOutput(uint64_t data, uint8_t bits);
 
@@ -61,5 +54,7 @@ namespace compress {
         }
 
         void processNext();
+
+        void addTemplate(int op);
     };
 }

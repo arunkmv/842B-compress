@@ -1,5 +1,5 @@
 #include <stdint-gcc.h>
-#include <stdio.h>
+#include <cstdio>
 #include "Compressor.h"
 
 compress::Compressor::Compressor(compress::CompressorConfig *config) {
@@ -57,7 +57,7 @@ void compress::Compressor::splitAdd(uint64_t data, uint8_t bits, int splitAt) {
 }
 
 void compress::Compressor::loadNextData() {
-    this->data8 = ((uint64_t *) this->in)[0];
+    this->data8[0] = ((uint64_t *) this->in)[0];
     this->data4[0] = ((uint32_t *) this->in)[0];
     this->data4[1] = ((uint32_t *) this->in)[1];
     this->data2[0] = ((uint16_t *) this->in)[0];
@@ -80,14 +80,29 @@ void compress::Compressor::addZeroTemplate() {
     this->addToOutput(OP_ZEROS, OP_BITS);
 }
 
+void compress::Compressor::addTemplate(int op) {
+
+}
+
 void compress::Compressor::processNext() {
 
+    int i;
+    this->hashManager->resetPhrases();
+
+    for (i = 0; i < OPS_MAX - 1; i++) {
+        if(this->hashManager->checkTemplate(i)) {
+            break;
+        }
+    }
+    addTemplate(i);
 }
 
 void compress::Compressor::process(uint8_t *input, uint8_t *output) {
     this->inbeg = input;
     this->in = input;
     this->out = output;
+    this->hashManager = new compress::HashManager(config, data8, data4, data2,
+            phrase8, phrase4, phrase2);
 
     //Last for initial sub-block made different to next
     this->last = ~(*(uint64_t *) input);
