@@ -10,6 +10,7 @@
 #define OPS_MAX             (26)
 
 #define INDEX_NOT_CHECKED   (-2)
+#define INDEX_NOT_FOUND     (-1)
 
 #define OP_ACTION	      (0x70)
 #define OP_ACTION_INDEX	  (0x10)

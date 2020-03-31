@@ -19,7 +19,7 @@ namespace compress {
         uint64_t data8[1];
         uint32_t data4[2];
         uint16_t data2[4];
-        int phrase8[1], phrase4[2], phrase2[4];
+        int pointer8[1], pointer4[2], pointer2[4];
 
         void addToOutput(uint64_t data, uint8_t bits);
 

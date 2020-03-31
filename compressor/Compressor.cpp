@@ -1,4 +1,3 @@
-#include <stdint-gcc.h>
 #include <cstdio>
 #include "Compressor.h"
 
@@ -87,7 +86,7 @@ void compress::Compressor::addTemplate(int op) {
 void compress::Compressor::processNext() {
 
     int i;
-    this->hashManager->resetPhrases();
+    this->hashManager->resetPointers();
 
     for (i = 0; i < OPS_MAX - 1; i++) {
         if(this->hashManager->checkTemplate(i)) {
@@ -102,7 +101,7 @@ void compress::Compressor::process(uint8_t *input, uint8_t *output) {
     this->in = input;
     this->out = output;
     this->hashManager = new compress::HashManager(config, data8, data4, data2,
-            phrase8, phrase4, phrase2);
+                                                  pointer8, pointer4, pointer2);
 
     //Last for initial sub-block made different to next
     this->last = ~(*(uint64_t *) input);

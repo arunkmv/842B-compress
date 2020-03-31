@@ -1,15 +1,53 @@
 #include "HashManager.h"
 
 compress::HashManager::HashManager(compress::CompressorConfig *config, uint64_t *data8, uint32_t *data4,
-                                   uint16_t *data2, int *phrase8, int *phrase4, int *phrase2) {
+                                   uint16_t *data2, int *pointer8, int *pointer4, int *pointer2) {
     this->config = config;
     this->data8 = data8;
     this->data4 = data4;
     this->data2 = data2;
-    this->phrase8 = phrase8;
-    this->phrase4 = phrase4;
-    this->phrase2 = phrase2;
+    this->pointer8 = pointer8;
+    this->pointer4 = pointer4;
+    this->pointer2 = pointer2;
 
+}
+
+bool compress::HashManager::findIndex8(int index) {
+    if((this->hashTable8).find(data8[index]) == (this->hashTable8).end())
+        this->pointer8[index] = INDEX_NOT_FOUND;
+    else
+        this->pointer8[index] = this->hashTable8[data8[index]];
+
+    return this->pointer8[index] >= 0;
+}
+
+bool compress::HashManager::findIndex4(int index) {
+    if((this->hashTable4).find(data4[index]) == (this->hashTable4).end())
+        this->pointer4[index] = INDEX_NOT_FOUND;
+    else
+        this->pointer4[index] = this->hashTable4[data4[index]];
+
+    return this->pointer4[index] >= 0;
+}
+
+bool compress::HashManager::findIndex2(int index) {
+    if((this->hashTable2).find(data2[index]) == (this->hashTable2).end())
+        this->pointer2[index] = INDEX_NOT_FOUND;
+    else
+        this->pointer2[index] = this->hashTable2[data2[index]];
+
+    return this->pointer2[index] >= 0;
+}
+
+bool compress::HashManager::checkIndex(int b, int index) {
+    if (b == 8) {
+        return ((this->pointer8[index] == INDEX_NOT_CHECKED) ? findIndex8(index) : this->pointer8[index] >= 0);
+    } else if (b == 4) {
+        return ((this->pointer4[index] == INDEX_NOT_CHECKED) ? findIndex4(index) : this->pointer4[index] >= 0);
+    } else if (b == 2) {
+        return ((this->pointer2[index] == INDEX_NOT_CHECKED) ? findIndex2(index) : this->pointer2[index] >= 0);
+    }
+    return false;
 }
 
 bool compress::HashManager::checkTemplate(int op) {
@@ -40,16 +78,12 @@ bool compress::HashManager::checkTemplate(int op) {
     return true;
 }
 
-bool compress::HashManager::checkIndex(int i, int index) {
-    return false
-}
-
-void compress::HashManager::resetPhrases() {
-    this->phrase8[0] = INDEX_NOT_CHECKED;
-    this->phrase4[0] = INDEX_NOT_CHECKED;
-    this->phrase4[1] = INDEX_NOT_CHECKED;
-    this->phrase2[0] = INDEX_NOT_CHECKED;
-    this->phrase2[1] = INDEX_NOT_CHECKED;
-    this->phrase2[2] = INDEX_NOT_CHECKED;
-    this->phrase2[3] = INDEX_NOT_CHECKED;
+void compress::HashManager::resetPointers() {
+    this->pointer8[0] = INDEX_NOT_CHECKED;
+    this->pointer4[0] = INDEX_NOT_CHECKED;
+    this->pointer4[1] = INDEX_NOT_CHECKED;
+    this->pointer2[0] = INDEX_NOT_CHECKED;
+    this->pointer2[1] = INDEX_NOT_CHECKED;
+    this->pointer2[2] = INDEX_NOT_CHECKED;
+    this->pointer2[3] = INDEX_NOT_CHECKED;
 }
