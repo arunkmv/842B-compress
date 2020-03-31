@@ -4,8 +4,6 @@
 
 using namespace std;
 
-#define concat(a, b) (a##b)
-
 namespace compress {
 
     class HashManager {
@@ -18,6 +16,8 @@ namespace compress {
         void resetPointers();
 
         bool checkTemplate(int op);
+
+        void updateHashTables(uint8_t *currPos, uint8_t *begPos);
 
     private:
         CompressorConfig *config;
@@ -32,7 +32,9 @@ namespace compress {
         bool checkIndex(int b, int index);
 
         bool findIndex8(int index);
+
         bool findIndex4(int index);
+
         bool findIndex2(int index);
 
     };

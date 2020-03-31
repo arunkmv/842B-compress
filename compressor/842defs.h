@@ -3,8 +3,11 @@
 #define OP_REPEAT         (0x1B)
 #define OP_ZEROS          (0x1C)
 
-#define OP_BITS             (5)
-#define REPEAT_BITS         (6)
+#define OP_BITS		(5)
+#define REPEAT_BITS	(6)
+#define I2_BITS		(8)
+#define I4_BITS		(9)
+#define I8_BITS		(8)
 
 #define MAX_REPEAT_COUNT  (0x3f)
 #define OPS_MAX             (26)

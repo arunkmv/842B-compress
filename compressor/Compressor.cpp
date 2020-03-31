@@ -66,6 +66,7 @@ void compress::Compressor::loadNextData() {
 }
 
 void compress::Compressor::updateForNextSubBlock() {
+    this->hashManager->updateHashTables(this->in, this->inbeg);
     this->last = this->next;
     this->in += 8;
 }

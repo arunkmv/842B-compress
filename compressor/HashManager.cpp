@@ -13,7 +13,7 @@ compress::HashManager::HashManager(compress::CompressorConfig *config, uint64_t 
 }
 
 bool compress::HashManager::findIndex8(int index) {
-    if((this->hashTable8).find(data8[index]) == (this->hashTable8).end())
+    if ((this->hashTable8).find(data8[index]) == (this->hashTable8).end())
         this->pointer8[index] = INDEX_NOT_FOUND;
     else
         this->pointer8[index] = this->hashTable8[data8[index]];
@@ -22,7 +22,7 @@ bool compress::HashManager::findIndex8(int index) {
 }
 
 bool compress::HashManager::findIndex4(int index) {
-    if((this->hashTable4).find(data4[index]) == (this->hashTable4).end())
+    if ((this->hashTable4).find(data4[index]) == (this->hashTable4).end())
         this->pointer4[index] = INDEX_NOT_FOUND;
     else
         this->pointer4[index] = this->hashTable4[data4[index]];
@@ -31,7 +31,7 @@ bool compress::HashManager::findIndex4(int index) {
 }
 
 bool compress::HashManager::findIndex2(int index) {
-    if((this->hashTable2).find(data2[index]) == (this->hashTable2).end())
+    if ((this->hashTable2).find(data2[index]) == (this->hashTable2).end())
         this->pointer2[index] = INDEX_NOT_FOUND;
     else
         this->pointer2[index] = this->hashTable2[data2[index]];
@@ -86,4 +86,19 @@ void compress::HashManager::resetPointers() {
     this->pointer2[1] = INDEX_NOT_CHECKED;
     this->pointer2[2] = INDEX_NOT_CHECKED;
     this->pointer2[3] = INDEX_NOT_CHECKED;
+}
+
+void compress::HashManager::updateHashTables(uint8_t *currPos, uint8_t *begPos) {
+    uint64_t pos = currPos - begPos;
+    uint64_t pos8 = (pos >> 3) % (1 << I8_BITS);
+    uint64_t pos4 = (pos >> 2) % (1 << I4_BITS);
+    uint64_t pos2 = (pos >> 1) % (1 << I2_BITS);
+
+    this->hashTable8[pos8] = data8[0];
+    this->hashTable4[pos4 + 0] = data4[0];
+    this->hashTable4[pos4 + 0] = data4[1];
+    this->hashTable2[pos2 + 0] = data2[0];
+    this->hashTable2[pos2 + 1] = data2[1];
+    this->hashTable2[pos2 + 2] = data2[2];
+    this->hashTable2[pos2 + 3] = data2[3];
 }
