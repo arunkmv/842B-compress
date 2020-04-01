@@ -21,7 +21,11 @@ namespace compress {
         uint16_t data2[4];
         int pointer8[1], pointer4[2], pointer2[4];
 
+        uint64_t getInputData(int n, int bits);
+
         void addToOutput(uint64_t data, uint8_t bits);
+
+        void splitAdd(uint64_t data, uint8_t bits, int splitAt);
 
         void loadNextData();
 
@@ -31,7 +35,9 @@ namespace compress {
 
         void addZeroTemplate();
 
-        void splitAdd(uint64_t data, uint8_t bits, int splitAt);
+        void addTemplate(int op);
+
+        void processNext();
 
         template<typename T>
         T asBigEndian(T u) {
@@ -52,9 +58,5 @@ namespace compress {
 
             return dest.u;
         }
-
-        void processNext();
-
-        void addTemplate(int op);
     };
 }

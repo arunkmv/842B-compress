@@ -9,6 +9,16 @@ compress::Compressor::Compressor(compress::CompressorConfig *config) {
 
 static uint8_t bit_mask[8] = {0x00, 0x80, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe};
 
+uint64_t compress::Compressor::getInputData(int n, int bits) {
+    if (bits == 16)
+        return *((uint16_t *) (this->in + n));
+    else if (bits == 32)
+        return *((uint32_t *) (this->in + n));
+    else if (bits == 64)
+        return *((uint64_t *) (this->in + n));
+    return 0;
+}
+
 void compress::Compressor::addToOutput(uint64_t data, uint8_t bits) {
     int nBits = this->currBit + bits;
     //Offset of bit position to the nearest multiple of 8
@@ -39,7 +49,7 @@ void compress::Compressor::addToOutput(uint64_t data, uint8_t bits) {
         *(uint64_t *) outPtr = (outVal << 56 | data << 8);
     else
         *(uint64_t *) outPtr = (outVal << 56 | data);
-    printf("%llx\n", *(u_int64_t *)outPtr);
+    //printf("%llx\n", *(u_int64_t *) outPtr);
 
     this->currBit = nBits;
     if (this->currBit > 7) {
@@ -56,13 +66,13 @@ void compress::Compressor::splitAdd(uint64_t data, uint8_t bits, int splitAt) {
 }
 
 void compress::Compressor::loadNextData() {
-    this->data8[0] = ((uint64_t *) this->in)[0];
-    this->data4[0] = ((uint32_t *) this->in)[0];
-    this->data4[1] = ((uint32_t *) this->in)[1];
-    this->data2[0] = ((uint16_t *) this->in)[0];
-    this->data2[1] = ((uint16_t *) this->in)[1];
-    this->data2[2] = ((uint16_t *) this->in)[2];
-    this->data2[3] = ((uint16_t *) this->in)[3];
+    this->data8[0] = getInputData(0, 64);
+    this->data4[0] = getInputData(0, 32);
+    this->data4[1] = getInputData(4, 32);
+    this->data2[0] = getInputData(0, 16);
+    this->data2[1] = getInputData(2, 16);
+    this->data2[2] = getInputData(4, 16);
+    this->data2[3] = getInputData(6, 16);
 }
 
 void compress::Compressor::updateForNextSubBlock() {
@@ -81,7 +91,59 @@ void compress::Compressor::addZeroTemplate() {
 }
 
 void compress::Compressor::addTemplate(int op) {
+    int i, n = 0;
+    uint8_t *templateToAdd = templateCombinations[op];
+    bool inval = false;
 
+    addToOutput(templateToAdd[4], OP_BITS);
+    for (i = 0; i < 4; i++) {
+        switch (templateToAdd[i] & OP_AMOUNT) {
+            case OP_AMOUNT_8:
+                if (n)
+                    inval = true;
+                else if (templateToAdd[i] & OP_ACTION_INDEX)
+                    addToOutput(this->pointer8[0], I8_BITS);
+                else if (templateToAdd[i] & OP_ACTION_DATA)
+                    addToOutput(this->data8[0], 64);
+                else
+                    inval = true;
+                break;
+            case OP_AMOUNT_4:
+                if (n == 2 && templateToAdd[i] & OP_ACTION_DATA)
+                    addToOutput(getInputData(2, 32), 32);
+                else if (n != 0 && n != 4)
+                    inval = true;
+                else if (templateToAdd[i] & OP_ACTION_INDEX)
+                    addToOutput(this->pointer4[n >> 2], I4_BITS);
+                else if (templateToAdd[i] & OP_ACTION_DATA)
+                    addToOutput(this->data4[n >> 2], 32);
+                else
+                    inval = true;
+                break;
+            case OP_AMOUNT_2:
+                if (n != 0 && n != 2 && n != 4 && n != 6)
+                    inval = true;
+                if (templateToAdd[i] & OP_ACTION_INDEX)
+                    addToOutput(this->pointer2[n >> 1], I2_BITS);
+                else if (templateToAdd[i] & OP_ACTION_DATA)
+                    addToOutput(this->data2[n >> 1], 16);
+                else
+                    inval = true;
+                break;
+            case OP_AMOUNT_0:
+                inval = (n != 8) || !(templateToAdd[i] & OP_ACTION_NOOP);
+                break;
+            default:
+                inval = true;
+                break;
+        }
+
+        n += templateToAdd[i] & OP_AMOUNT;
+    }
+
+    if(inval || n != 8) {
+        printf("Invalid template\n");
+    }
 }
 
 void compress::Compressor::processNext() {
@@ -90,7 +152,7 @@ void compress::Compressor::processNext() {
     this->hashManager->resetPointers();
 
     for (i = 0; i < OPS_MAX - 1; i++) {
-        if(this->hashManager->checkTemplate(i)) {
+        if (this->hashManager->checkTemplate(i)) {
             break;
         }
     }
