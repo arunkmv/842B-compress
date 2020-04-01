@@ -103,6 +103,10 @@ void compress::Compressor::addShortTemplate() {
         addToOutput(this->in[i], 8);
 }
 
+void compress::Compressor::addEndTemplate() {
+    addToOutput(OP_END, OP_BITS);
+}
+
 void compress::Compressor::addTemplate(int op) {
     int i, n = 0;
     uint8_t *templateToAdd = templateCombinations[op];
@@ -225,4 +229,6 @@ void compress::Compressor::process(uint8_t *input, uint8_t *output) {
         this->in += this->bSize;
         this->bSize = 0;
     }
+
+    addEndTemplate();
 }

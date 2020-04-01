@@ -61,5 +61,7 @@ namespace compress {
         }
 
         void addShortTemplate();
+
+        void addEndTemplate();
     };
 }
