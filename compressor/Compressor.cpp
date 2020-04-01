@@ -141,7 +141,7 @@ void compress::Compressor::addTemplate(int op) {
         n += templateToAdd[i] & OP_AMOUNT;
     }
 
-    if(inval || n != 8) {
+    if (inval || n != 8) {
         printf("Invalid template\n");
     }
 }
