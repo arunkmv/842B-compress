@@ -14,6 +14,7 @@ namespace compress {
         HashManager *hashManager;
         uint8_t *inbeg, *in, *out;
         uint64_t last, next;
+        uint64_t bSize;
         uint8_t currBit;
         uint8_t repeat_count;
         uint64_t data8[1];
@@ -58,5 +59,7 @@ namespace compress {
 
             return dest.u;
         }
+
+        void addShortTemplate();
     };
 }

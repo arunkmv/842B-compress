@@ -79,6 +79,7 @@ void compress::Compressor::updateForNextSubBlock() {
     this->hashManager->updateHashTables(this->in, this->inbeg);
     this->last = this->next;
     this->in += 8;
+    this->bSize -= 8;
 }
 
 void compress::Compressor::addRepeatTemplate() {
@@ -88,6 +89,18 @@ void compress::Compressor::addRepeatTemplate() {
 
 void compress::Compressor::addZeroTemplate() {
     this->addToOutput(OP_ZEROS, OP_BITS);
+}
+
+void compress::Compressor::addShortTemplate() {
+    int i;
+    if(!(this->bSize) || this->bSize > SHORT_DATA_BITS_MAX)
+        return;
+
+    addToOutput(OP_SHORT_DATA, OP_BITS);
+    addToOutput(this->bSize, SHORT_DATA_BITS);
+
+    for (i = 0; i < this->bSize; i++)
+        addToOutput(this->in[i], 8);
 }
 
 void compress::Compressor::addTemplate(int op) {
@@ -163,13 +176,14 @@ void compress::Compressor::process(uint8_t *input, uint8_t *output) {
     this->inbeg = input;
     this->in = input;
     this->out = output;
+    this->bSize = config->blockSize;
     this->hashManager = new compress::HashManager(config, data8, data4, data2,
                                                   pointer8, pointer4, pointer2);
 
     //Last for initial sub-block made different to next
     this->last = ~(*(uint64_t *) input);
 
-    for (int i = 0; i < config->subBlockCount; i++) {
+    while (this->bSize > 7) {
 
         this->next = (*(uint64_t *) this->in);
 
@@ -184,6 +198,7 @@ void compress::Compressor::process(uint8_t *input, uint8_t *output) {
         }
         if (this->repeat_count) {
             addRepeatTemplate();
+            this->repeat_count = 0;
             if (this->last == this->next) {
                 updateForNextSubBlock();
                 continue;
@@ -198,5 +213,16 @@ void compress::Compressor::process(uint8_t *input, uint8_t *output) {
         }
 
         updateForNextSubBlock();
+    }
+
+    if(this->repeat_count) {
+        addRepeatTemplate();
+        this->repeat_count = 0;
+    }
+
+    if(this->bSize > 0) {
+        addShortTemplate();
+        this->in += this->bSize;
+        this->bSize = 0;
     }
 }
