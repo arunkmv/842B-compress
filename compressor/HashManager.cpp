@@ -96,7 +96,7 @@ void compress::HashManager::updateHashTables(uint8_t *currPos, uint8_t *begPos) 
 
     this->hashTable8[pos8] = data8[0];
     this->hashTable4[pos4 + 0] = data4[0];
-    this->hashTable4[pos4 + 0] = data4[1];
+    this->hashTable4[pos4 + 1] = data4[1];
     this->hashTable2[pos2 + 0] = data2[0];
     this->hashTable2[pos2 + 1] = data2[1];
     this->hashTable2[pos2 + 2] = data2[2];
