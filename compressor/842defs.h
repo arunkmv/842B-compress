@@ -12,6 +12,7 @@
 #define I2_BITS		    (8)
 #define I4_BITS		    (9)
 #define I8_BITS		    (8)
+#define CRC_BITS	(32)
 
 #define SHORT_DATA_BITS_MAX	(0x7)
 #define MAX_REPEAT_COUNT    (0x3f)

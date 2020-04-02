@@ -2,7 +2,7 @@ project(842compressor)
 
 cmake_minimum_required(VERSION 3.14)
 add_executable(compressor.out
-        main.cpp 842defs.h
+        main.cpp 842defs.h crc32.h crc32table.h
         Compressor.cpp Compressor.h CompressorConfig.cpp CompressorConfig.h
         HashManager.cpp HashManager.h)
 

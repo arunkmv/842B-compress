@@ -93,7 +93,7 @@ void compress::Compressor::addZeroTemplate() {
 
 void compress::Compressor::addShortTemplate() {
     int i;
-    if(!(this->bSize) || this->bSize > SHORT_DATA_BITS_MAX)
+    if (!(this->bSize) || this->bSize > SHORT_DATA_BITS_MAX)
         return;
 
     addToOutput(OP_SHORT_DATA, OP_BITS);
@@ -219,16 +219,24 @@ void compress::Compressor::process(uint8_t *input, uint8_t *output) {
         updateForNextSubBlock();
     }
 
-    if(this->repeat_count) {
+    if (this->repeat_count) {
         addRepeatTemplate();
         this->repeat_count = 0;
     }
 
-    if(this->bSize > 0) {
+    if (this->bSize > 0) {
         addShortTemplate();
         this->in += this->bSize;
         this->bSize = 0;
     }
 
     addEndTemplate();
+
+    uint32_t crc = crc32_be(0, input, this->bSize);
+    addToOutput(crc, CRC_BITS);
+
+    if (this->currBit) {
+        this->out++;
+        this->currBit = 0;
+    }
 }
