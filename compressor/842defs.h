@@ -1,5 +1,7 @@
 #include <stdint-gcc.h>
 
+#define DEBUG 1
+
 #define OP_REPEAT         (0x1B)
 #define OP_ZEROS          (0x1C)
 #define OP_SHORT_DATA	  (0x1D)

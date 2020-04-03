@@ -1,8 +1,7 @@
 #include "CompressorConfig.h"
 
-compress::CompressorConfig::CompressorConfig() {
-    this->blockSize = 32;                       //Block size in bytes
-    this->subBlockCount = blockSize / 8;
+compress::CompressorConfig::CompressorConfig(int iLen) {
+    this->blockSize = iLen;                       //Block size in bytes
     this->byteOrder = findEndianness();
 }
 

@@ -1,5 +1,6 @@
 #include <stdint-gcc.h>
 #include <cstdio>
+#include <cstring>
 #include "Compressor.h"
 
 using namespace std;
@@ -9,25 +10,27 @@ int main() {
     printf("\n        842 Compression        ");
     printf("\n===============================\n\n");
 
-    uint64_t input[8] = {
-            0x0000000000000000, 0x0000000000000000, 0x0000000000000001, 0x0000000000000000,
-            0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000
-    };
-    uint64_t output[8] = {
-            0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000,
-            0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000
-    };
+    uint8_t *in, *out;
+    size_t iLen = 32;
 
-    uint64_t a = 0x12345678;
-    uint8_t *b = (uint8_t *)output;
-    *(u_int64_t *)b = a;
+    in = (uint8_t *) malloc(iLen);
+    out = (uint8_t *) malloc(2 * iLen);
+    memset(in, 0, iLen);
+    memset(out, 0, 2*iLen);
 
-//    compress::Compressor compressor(new compress::CompressorConfig);
-//    compressor.process(reinterpret_cast<uint8_t *>(input), reinterpret_cast<uint8_t *>(output));
+    uint8_t tmp[] = {0x30, 0x30, 0x31, 0x31, 0x32, 0x32, 0x33, 0x33, 0x34, 0x34, 0x35, 0x35, 0x36, 0x36, 0x37, 0x37,
+                     0x38, 0x38, 0x39, 0x39, 0x40, 0x40, 0x41, 0x41, 0x42, 0x42, 0x43, 0x43, 0x44, 0x44, 0x45,
+                     0x45};//"0011223344556677889900AABBCCDDEE";
 
-    for (unsigned long long i : output) {
-        printf("%llx", i);
-        printf("\n");
+    strncpy((char *) in, (const char *) tmp, 32);
+
+    compress::Compressor compressor(new compress::CompressorConfig(iLen));
+    compressor.process(in, out);
+
+    for (int i = 0; i < 64; i++) {
+        printf("%02x:", out[i]);
     }
-    return 0;
+
+    free(in);
+    free(out);
 }

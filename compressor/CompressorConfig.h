@@ -5,10 +5,9 @@ namespace compress {
     class CompressorConfig {
     public:
         int blockSize;
-        int subBlockCount;
         bool byteOrder;
 
-        CompressorConfig();
+        CompressorConfig(int iLen);
 
         static bool findEndianness();
     };

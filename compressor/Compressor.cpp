@@ -11,11 +11,11 @@ static uint8_t bit_mask[8] = {0x00, 0x80, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe};
 
 uint64_t compress::Compressor::getInputData(int n, int bits) {
     if (bits == 16)
-        return *((uint16_t *) (this->in + n));
+        return asBigEndian(*((uint16_t *) (this->in + n)));
     else if (bits == 32)
-        return *((uint32_t *) (this->in + n));
+        return asBigEndian(*((uint32_t *) (this->in + n)));
     else if (bits == 64)
-        return *((uint64_t *) (this->in + n));
+        return asBigEndian(*((uint64_t *) (this->in + n)));
     return 0;
 }
 
@@ -26,8 +26,12 @@ void compress::Compressor::addToOutput(uint64_t data, uint8_t bits) {
     uint64_t outVal;
     uint8_t *outPtr = this->out;
 
+#ifdef DEBUG
+    printf("add %u bits %lx\n", (unsigned char) bits, (unsigned long) data);
+#endif
+
     if (nBits > 64) {
-        splitAdd(data, bits, 32);
+        return splitAdd(data, bits, 32);
     }
 
     outVal = *outPtr & bit_mask[this->currBit];
@@ -53,7 +57,7 @@ void compress::Compressor::addToOutput(uint64_t data, uint8_t bits) {
 
     this->currBit = nBits;
     if (this->currBit > 7) {
-        this->out += this->currBit / 8;
+        this->out += (this->currBit / 8);
         this->currBit %= 8;
     }
 }
@@ -112,8 +116,17 @@ void compress::Compressor::addTemplate(int op) {
     uint8_t *templateToAdd = templateCombinations[op];
     bool inval = false;
 
+    #ifdef DEBUG
+        printf("template %x\n", templateToAdd[4]);
+    #endif
+
     addToOutput(templateToAdd[4], OP_BITS);
     for (i = 0; i < 4; i++) {
+
+    #ifdef DEBUG
+            printf("op %x\n", templateToAdd[i]);
+    #endif
+
         switch (templateToAdd[i] & OP_AMOUNT) {
             case OP_AMOUNT_8:
                 if (n)
