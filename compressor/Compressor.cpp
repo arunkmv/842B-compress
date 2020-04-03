@@ -40,19 +40,19 @@ void compress::Compressor::addToOutput(uint64_t data, uint8_t bits) {
     if (nBits <= 8)
         *outPtr = outVal | data;
     else if (nBits <= 16)
-        *(uint16_t *) outPtr = (outVal << 8 | data);
+        *(uint16_t *) outPtr = asBigEndian(outVal << 8 | data);
     else if (nBits <= 24)
-        *(uint32_t *) outPtr = (outVal << 24 | data << 8);
+        *(uint32_t *) outPtr = asBigEndian(outVal << 24 | data << 8);
     else if (nBits <= 32)
-        *(uint32_t *) outPtr = (outVal << 24 | data);
+        *(uint32_t *) outPtr = asBigEndian(outVal << 24 | data);
     else if (nBits <= 40)
-        *(uint64_t *) outPtr = (outVal << 56 | data << 24);
+        *(uint64_t *) outPtr = asBigEndian(outVal << 56 | data << 24);
     else if (nBits <= 48)
-        *(uint64_t *) outPtr = (outVal << 56 | data << 16);
+        *(uint64_t *) outPtr = asBigEndian(outVal << 56 | data << 16);
     else if (nBits <= 56)
-        *(uint64_t *) outPtr = (outVal << 56 | data << 8);
+        *(uint64_t *) outPtr = asBigEndian(outVal << 56 | data << 8);
     else
-        *(uint64_t *) outPtr = (outVal << 56 | data);
+        *(uint64_t *) outPtr = asBigEndian(outVal << 56 | data);
     //printf("%llx\n", *(u_int64_t *) outPtr);
 
     this->currBit = nBits;
