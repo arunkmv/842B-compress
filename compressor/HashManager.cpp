@@ -88,7 +88,7 @@ void compress::HashManager::resetPointers() {
     this->pointer2[3] = INDEX_NOT_CHECKED;
 }
 
-void compress::HashManager::updateHashTables(uint8_t *currPos, uint8_t *begPos) {
+void compress::HashManager::updateHashTables(const uint8_t *currPos, const uint8_t *begPos) {
     uint64_t pos = currPos - begPos;
     uint64_t pos8 = (pos >> 3) % (1 << I8_BITS);
     uint64_t pos4 = (pos >> 2) % (1 << I4_BITS);

@@ -189,9 +189,9 @@ void compress::Compressor::processNext() {
     addTemplate(i);
 }
 
-void compress::Compressor::process(uint8_t *input, uint8_t *output) {
+void compress::Compressor::process(const uint8_t *input, uint8_t *output) {
     this->inbeg = input;
-    this->in = input;
+    this->in = (uint8_t *)input;
     this->out = output;
     this->bSize = config->blockSize;
     this->hashManager = new compress::HashManager(config, data8, data4, data2,
@@ -245,7 +245,7 @@ void compress::Compressor::process(uint8_t *input, uint8_t *output) {
 
     addEndTemplate();
 
-    uint32_t crc = crc32_be(0, input, this->bSize);
+    uint32_t crc = crc32_be(0, input, this->config->blockSize);
     addToOutput(crc, CRC_BITS);
 
     if (this->currBit) {

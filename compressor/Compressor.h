@@ -8,12 +8,13 @@ namespace compress {
     public:
         explicit Compressor(CompressorConfig *config);
 
-        void process(uint8_t *input, uint8_t *output);
+        void process(const uint8_t *input, uint8_t *output);
 
     private:
         CompressorConfig *config;
         HashManager *hashManager;
-        uint8_t *inbeg, *in, *out;
+        const uint8_t *inbeg;
+        uint8_t *in, *out;
         uint64_t last, next;
         uint64_t bSize;
         uint8_t currBit;
@@ -36,6 +37,10 @@ namespace compress {
         void addRepeatTemplate();
 
         void addZeroTemplate();
+
+        void addShortTemplate();
+
+        void addEndTemplate();
 
         void addTemplate(int op);
 
@@ -60,9 +65,5 @@ namespace compress {
 
             return dest.u;
         }
-
-        void addShortTemplate();
-
-        void addEndTemplate();
     };
 }

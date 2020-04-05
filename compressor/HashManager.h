@@ -17,7 +17,7 @@ namespace compress {
 
         bool checkTemplate(int op);
 
-        void updateHashTables(uint8_t *currPos, uint8_t *begPos);
+        void updateHashTables(const uint8_t *currPos, const uint8_t *begPos);
 
     private:
         CompressorConfig *config;
