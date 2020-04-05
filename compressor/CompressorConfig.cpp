@@ -3,6 +3,7 @@
 compress::CompressorConfig::CompressorConfig(int iLen) {
     this->blockSize = iLen;                       //Block size in bytes
     this->byteOrder = findEndianness();
+    this->displayStats = true;
 }
 
 bool compress::CompressorConfig::findEndianness() {

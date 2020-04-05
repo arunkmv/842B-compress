@@ -6,6 +6,7 @@ namespace compress {
     public:
         int blockSize;
         bool byteOrder;
+        bool displayStats;
 
         CompressorConfig(int iLen);
 

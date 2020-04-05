@@ -46,6 +46,8 @@ namespace compress {
 
         void processNext();
 
+        void displayCR(const uint8_t *string1, uint8_t *string2);
+
         template<typename T>
         T asBigEndian(T u) {
             static_assert(CHAR_BIT == 8, "CHAR_BIT != 8");

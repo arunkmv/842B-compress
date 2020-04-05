@@ -255,4 +255,12 @@ void compress::Compressor::process(const uint8_t *input, uint8_t *output) {
         this->out++;
         this->currBit = 0;
     }
+
+    if(this->config->displayStats)
+        displayCR(input, output);
+}
+
+void compress::Compressor::displayCR(const uint8_t *input, uint8_t *output) {
+    float cr = (float)(abs(this->in - input))/abs(this->out - output);
+    printf("Compression ratio: %f\n", cr);
 }
