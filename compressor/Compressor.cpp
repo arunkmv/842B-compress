@@ -87,6 +87,9 @@ void compress::Compressor::updateForNextSubBlock() {
 }
 
 void compress::Compressor::addRepeatTemplate() {
+#ifdef DEBUG
+    printf("repeat count %x \n", this->repeat_count);
+#endif
     addToOutput(OP_REPEAT, OP_BITS);
     addToOutput(this->repeat_count, REPEAT_BITS);
 }

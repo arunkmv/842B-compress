@@ -94,11 +94,14 @@ void compress::HashManager::updateHashTables(const uint8_t *currPos, const uint8
     uint64_t pos4 = (pos >> 2) % (1 << I4_BITS);
     uint64_t pos2 = (pos >> 1) % (1 << I2_BITS);
 
-    this->hashTable8[pos8] = data8[0];
-    this->hashTable4[pos4 + 0] = data4[0];
-    this->hashTable4[pos4 + 1] = data4[1];
-    this->hashTable2[pos2 + 0] = data2[0];
-    this->hashTable2[pos2 + 1] = data2[1];
-    this->hashTable2[pos2 + 2] = data2[2];
-    this->hashTable2[pos2 + 3] = data2[3];
+    this->hashTable8[data8[0]]= pos8;
+    this->hashTable4[data4[0]]= pos4 + 0;
+    this->hashTable4[data4[1]]= pos4 + 1;
+    this->hashTable2[data2[0]]= pos2 + 0;
+    this->hashTable2[data2[1]]= pos2 + 1;
+    this->hashTable2[data2[2]]= pos2 + 2;
+    this->hashTable2[data2[3]]= pos2 + 3;
+
+//    for (auto & i : this->hashTable8)
+//        printf("%llx,  %x\n", i.first ,i.second);
 }
