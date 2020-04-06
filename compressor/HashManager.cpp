@@ -1,8 +1,7 @@
 #include "HashManager.h"
 
-compress::HashManager::HashManager(compress::CompressorConfig *config, uint64_t *data8, uint32_t *data4,
+compress::HashManager::HashManager(uint64_t *data8, uint32_t *data4,
                                    uint16_t *data2, int *pointer8, int *pointer4, int *pointer2) {
-    this->config = config;
     this->data8 = data8;
     this->data4 = data4;
     this->data2 = data2;

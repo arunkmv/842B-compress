@@ -8,7 +8,7 @@ namespace compress {
 
     class HashManager {
     public:
-        explicit HashManager(CompressorConfig *config, uint64_t *data8, uint32_t *data4, uint16_t *data2,
+        explicit HashManager(uint64_t *data8, uint32_t *data4, uint16_t *data2,
                              int *pointer8,
                              int *pointer4,
                              int *pointer2);
@@ -20,7 +20,6 @@ namespace compress {
         void updateHashTables(const uint8_t *currPos, const uint8_t *begPos);
 
     private:
-        CompressorConfig *config;
         uint64_t *data8;
         uint32_t *data4;
         uint16_t *data2;

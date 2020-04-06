@@ -250,13 +250,24 @@ void compress::Compressor::processNext() {
     addTemplate(i);
 }
 
+/**
+ * 842 Compressor
+ *
+ * Compress the uncompressed buffer of length @iLen at @input to the output buffer
+ * @output, using no more than @oLen bytes, using the 842 compression format.
+ *
+ * Returns: 0 on success, error on failure.  The @oLen parameter
+ * will contain the number of output bytes written on success, or
+ * 0 on error.
+ */
+
 int compress::Compressor::process(const uint8_t *input, uint8_t *output) {
     this->inbeg = input;
     this->in = (uint8_t *) input;
     this->out = output;
     this->inputLength = config->inputLength;
     this->outputLength = *(config->outputLength);
-    this->hashManager = new compress::HashManager(config, data8, data4, data2,
+    this->hashManager = new compress::HashManager(data8, data4, data2,
                                                   pointer8, pointer4, pointer2);
     int err;
     uint64_t pad, maxLength = this->outputLength;
