@@ -105,6 +105,15 @@ int compress::Decompressor::process(const uint8_t *input, uint8_t *output) {
                 }
 
                 break;
+            case OP_ZEROS:
+                if(this->outputLength < 8)
+                    return -ENOSPC;
+
+                memset(this->out, 0, 8);
+                this->out += 8;
+                this->outputLength -=8;
+
+                break;
         }
     } while (this->currOp != OP_END);
     return 0;
