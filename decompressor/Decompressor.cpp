@@ -64,6 +64,10 @@ int compress::Decompressor::splitLoad(uint64_t *data, uint8_t bits, int splitAt)
     return 0;
 }
 
+int compress::Decompressor::processTemplate() {
+    return 0;
+}
+
 int compress::Decompressor::process(const uint8_t *input, uint8_t *output) {
     this->in = (uint8_t *) input;
     this->out = output;
@@ -72,7 +76,7 @@ int compress::Decompressor::process(const uint8_t *input, uint8_t *output) {
     this->outputLength = *this->config->outputLength;
 
     int err;
-    uint64_t repeat, maxLength = this->outputLength;
+    uint64_t repeat, bytes, temp, maxLength = this->outputLength;
     *(this->config->outputLength) = 0;
 
     do {
@@ -112,6 +116,34 @@ int compress::Decompressor::process(const uint8_t *input, uint8_t *output) {
                 memset(this->out, 0, 8);
                 this->out += 8;
                 this->outputLength -=8;
+
+                break;
+            case OP_SHORT_DATA:
+                err = loadNextBits(&bytes, SHORT_DATA_BITS);
+                if(err)
+                    return err;
+
+                if(!bytes || bytes > SHORT_DATA_BITS_MAX)
+                    return -EINVAL;
+
+                while(bytes-- > 0) {
+                    err = loadNextBits(&temp, 8);
+                    if(err)
+                        return err;
+
+                    *this->out = (uint8_t)temp;
+                    this->out += 8;
+                    this->outputLength -=8;
+                }
+
+                break;
+            case OP_END:
+
+                break;
+            default:
+                err = processTemplate();
+                if(err)
+                    return err;
 
                 break;
         }

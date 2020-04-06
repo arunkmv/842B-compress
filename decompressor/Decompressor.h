@@ -46,5 +46,7 @@ namespace compress {
 
             return dest.u;
         }
+
+        int processTemplate();
     };
 }
