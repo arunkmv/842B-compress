@@ -22,9 +22,9 @@ namespace compress {
         uint64_t currOp;
         uint64_t inputLength, outputLength;
 
-        int loadNextBits(uint8_t bits);
+        int loadNextBits(u_int64_t *data, uint8_t bits);
 
-        int splitLoad(uint8_t bits, int splitAt);
+        int splitLoad(uint64_t *data, uint8_t bits, int splitAt);
 
         template<typename T>
         T asBigEndian(T u) {
