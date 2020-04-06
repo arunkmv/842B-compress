@@ -1,0 +1,4 @@
+project(soft-compress)
+cmake_minimum_required(VERSION 3.14)
+add_subdirectory(compressor)
+add_subdirectory(decompressor)
