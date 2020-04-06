@@ -69,6 +69,33 @@ int compress::Decompressor::processOPIndex(uint8_t n) {
 }
 
 int compress::Decompressor::processOPData(u_int8_t n) {
+    uint64_t data;
+    int err;
+
+    if (n > this->outputLength)
+        return -ENOSPC;
+
+    err = loadNextBits(&data, n * 8);
+    if (err)
+        return err;
+
+    switch (n) {
+        case 2:
+            *(uint16_t *)(this->out) = asBigEndian<uint16_t >(data);
+            break;
+        case 4:
+            *(uint32_t *)(this->out) = asBigEndian<uint32_t >(data);
+            break;
+        case 8:
+            *(uint64_t *)(this->out) = asBigEndian<uint64_t >(data);
+            break;
+        default:
+            return -EINVAL;
+    }
+
+    this->out += n;
+    this->outputLength -= n;
+
     return 0;
 }
 
