@@ -1,5 +1,3 @@
-#include <cstdio>
-#include <cstring>
 #include "Compressor.h"
 
 compress::Compressor::Compressor(compress::CompressorConfig *config) {

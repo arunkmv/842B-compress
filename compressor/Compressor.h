@@ -1,6 +1,8 @@
+#include <cstdio>
+#include <cstring>
+#include <climits>
 #include "HashManager.h"
 #include "../common/crc32.h"
-#include <climits>
 
 namespace compress {
 
