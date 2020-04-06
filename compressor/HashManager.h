@@ -1,6 +1,6 @@
 #include <unordered_map>
-#include "CompressorConfig.h"
-#include "842defs.h"
+#include "../common/CompressorConfig.h"
+#include "../common/842defs.h"
 
 using namespace std;
 

@@ -1,5 +1,5 @@
 #include "HashManager.h"
-#include "crc32.h"
+#include "../common/crc32.h"
 #include <climits>
 
 namespace compress {
