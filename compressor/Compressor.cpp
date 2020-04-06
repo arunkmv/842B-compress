@@ -205,7 +205,7 @@ int compress::Compressor::process(const uint8_t *input, uint8_t *output) {
     this->outputLength = *(config->outputLength);
     this->hashManager = new compress::HashManager(config, data8, data4, data2,
                                                   pointer8, pointer4, pointer2);
-    uint64_t maxLength = this->outputLength;
+    uint64_t pad, maxLength = this->outputLength;
     *(this->config->outputLength) = 0;
 
     //TODO input length %8 & >8 check
@@ -267,7 +267,14 @@ int compress::Compressor::process(const uint8_t *input, uint8_t *output) {
         this->currBit = 0;
     }
 
-    //TODO Add padding to multiple of 8
+    pad = (8 - ((maxLength - this->outputLength) % 8)) % 8;
+    if (pad) {
+        if (pad > this->outputLength) /* we were so close! */
+            return -ENOSPC;
+        memset(this->out, 0, pad);
+        this->out += pad;
+        this->outputLength -= pad;
+    }
 
     *(this->config->outputLength) = maxLength - this->outputLength;
 
