@@ -8,7 +8,7 @@ namespace compress {
     public:
         explicit Compressor(CompressorConfig *config);
 
-        void process(const uint8_t *input, uint8_t *output);
+        int process(const uint8_t *input, uint8_t *output);
 
     private:
         CompressorConfig *config;
@@ -16,7 +16,7 @@ namespace compress {
         const uint8_t *inbeg;
         uint8_t *in, *out;
         uint64_t last, next;
-        uint64_t bSize;
+        uint64_t inputLength, outputLength;
         uint8_t currBit;
         uint8_t repeat_count;
         uint64_t data8[1];

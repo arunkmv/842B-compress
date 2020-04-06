@@ -12,9 +12,10 @@ int main() {
 
     uint8_t *in, *out;
     size_t iLen = 32;
+    size_t oLen = iLen * 2;
 
     in = (uint8_t *) malloc(iLen);
-    out = (uint8_t *) malloc(2 * iLen);
+    out = (uint8_t *) malloc(oLen);
     memset(in, 0, iLen);
     memset(out, 0, 2*iLen);
 
@@ -25,7 +26,7 @@ int main() {
 
     strncpy((char *) in, (const char *) tmp, 32);
 
-    compress::Compressor compressor(new compress::CompressorConfig(iLen));
+    compress::Compressor compressor(new compress::CompressorConfig(iLen, &oLen));
     compressor.process(in, out);
 
     for (int i = 0; i < 64; i++) {

@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <cstring>
 #include "Compressor.h"
 
 compress::Compressor::Compressor(compress::CompressorConfig *config) {
@@ -30,9 +31,12 @@ void compress::Compressor::addToOutput(uint64_t data, uint8_t bits) {
     printf("add %u bits %lx\n", (unsigned char) bits, (unsigned long) data);
 #endif
 
-    if (nBits > 64) {
+    if (nBits > 64)
         return splitAdd(data, bits, 32);
-    }
+    else if (this->outputLength < 8 && nBits > 32 && nBits <= 56)
+        return splitAdd(data, bits, 16);
+    else if (this->outputLength < 4 && nBits > 16 && nBits <= 24)
+        return splitAdd(data, bits, 8);
 
     outVal = *outPtr & bit_mask[this->currBit];
     data <<= offset;
@@ -58,6 +62,7 @@ void compress::Compressor::addToOutput(uint64_t data, uint8_t bits) {
     this->currBit = nBits;
     if (this->currBit > 7) {
         this->out += (this->currBit / 8);
+        this->outputLength -= (this->currBit / 8);
         this->currBit %= 8;
     }
 }
@@ -83,7 +88,7 @@ void compress::Compressor::updateForNextSubBlock() {
     this->hashManager->updateHashTables(this->in, this->inbeg);
     this->last = this->next;
     this->in += 8;
-    this->bSize -= 8;
+    this->inputLength -= 8;
 }
 
 void compress::Compressor::addRepeatTemplate() {
@@ -100,13 +105,13 @@ void compress::Compressor::addZeroTemplate() {
 
 void compress::Compressor::addShortTemplate() {
     int i;
-    if (!(this->bSize) || this->bSize > SHORT_DATA_BITS_MAX)
+    if (!(this->inputLength) || this->inputLength > SHORT_DATA_BITS_MAX)
         return;
 
     addToOutput(OP_SHORT_DATA, OP_BITS);
-    addToOutput(this->bSize, SHORT_DATA_BITS);
+    addToOutput(this->inputLength, SHORT_DATA_BITS);
 
-    for (i = 0; i < this->bSize; i++)
+    for (i = 0; i < this->inputLength; i++)
         addToOutput(this->in[i], 8);
 }
 
@@ -119,16 +124,16 @@ void compress::Compressor::addTemplate(int op) {
     uint8_t *templateToAdd = templateCombinations[op];
     bool inval = false;
 
-    #ifdef DEBUG
-        printf("template %x\n", templateToAdd[4]);
-    #endif
+#ifdef DEBUG
+    printf("template %x\n", templateToAdd[4]);
+#endif
 
     addToOutput(templateToAdd[4], OP_BITS);
     for (i = 0; i < 4; i++) {
 
-    #ifdef DEBUG
-            printf("op %x\n", templateToAdd[i]);
-    #endif
+#ifdef DEBUG
+        printf("op %x\n", templateToAdd[i]);
+#endif
 
         switch (templateToAdd[i] & OP_AMOUNT) {
             case OP_AMOUNT_8:
@@ -192,18 +197,23 @@ void compress::Compressor::processNext() {
     addTemplate(i);
 }
 
-void compress::Compressor::process(const uint8_t *input, uint8_t *output) {
+int compress::Compressor::process(const uint8_t *input, uint8_t *output) {
     this->inbeg = input;
-    this->in = (uint8_t *)input;
+    this->in = (uint8_t *) input;
     this->out = output;
-    this->bSize = config->blockSize;
+    this->inputLength = config->inputLength;
+    this->outputLength = *(config->outputLength);
     this->hashManager = new compress::HashManager(config, data8, data4, data2,
                                                   pointer8, pointer4, pointer2);
+    uint64_t maxLength = this->outputLength;
+    *(this->config->outputLength) = 0;
+
+    //TODO input length %8 & >8 check
 
     //Last for initial sub-block made different to next
     this->last = ~(*(uint64_t *) input);
 
-    while (this->bSize > 7) {
+    while (this->inputLength > 7) {
 
         this->next = (*(uint64_t *) this->in);
 
@@ -240,24 +250,32 @@ void compress::Compressor::process(const uint8_t *input, uint8_t *output) {
         this->repeat_count = 0;
     }
 
-    if (this->bSize > 0) {
+    if (this->inputLength > 0) {
         addShortTemplate();
-        this->in += this->bSize;
-        this->bSize = 0;
+        this->in += this->inputLength;
+        this->inputLength = 0;
     }
 
     addEndTemplate();
 
-    uint32_t crc = crc32_be(0, input, this->config->blockSize);
+    uint32_t crc = crc32_be(0, input, this->config->inputLength);
     addToOutput(crc, CRC_BITS);
 
     if (this->currBit) {
         this->out++;
+        this->outputLength--;
         this->currBit = 0;
     }
 
-    if(this->config->displayStats)
+    //TODO Add padding to multiple of 8
+
+    *(this->config->outputLength) = maxLength - this->outputLength;
+
+    if (this->config->displayStats) {
         displayCR(input, output);
+    }
+
+    return 0;
 }
 
 void compress::Compressor::displayCR(const uint8_t *input, uint8_t *output) {
