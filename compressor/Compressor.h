@@ -26,23 +26,23 @@ namespace compress {
 
         uint64_t getInputData(int n, int bits);
 
-        void addToOutput(uint64_t data, uint8_t bits);
+        int addToOutput(uint64_t data, uint8_t bits);
 
-        void splitAdd(uint64_t data, uint8_t bits, int splitAt);
+        int splitAdd(uint64_t data, uint8_t bits, int splitAt);
 
         void loadNextData();
 
         void updateForNextSubBlock();
 
-        void addRepeatTemplate();
+        int addRepeatTemplate();
 
-        void addZeroTemplate();
+        int addZeroTemplate();
 
-        void addShortTemplate();
+        int addShortTemplate();
 
-        void addEndTemplate();
+        int addEndTemplate();
 
-        void addTemplate(int op);
+        int addTemplate(int op);
 
         void processNext();
 

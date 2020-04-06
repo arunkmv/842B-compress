@@ -1,6 +1,8 @@
 #include <stdint-gcc.h>
 
-#define DEBUG 1
+//#define DEBUG 1
+
+#define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
 
 #define OP_REPEAT         (0x1B)
 #define OP_ZEROS          (0x1C)

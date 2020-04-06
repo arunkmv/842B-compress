@@ -13,21 +13,26 @@ int main() {
     uint8_t *in, *out;
     size_t iLen = 32;
     size_t oLen = iLen * 2;
+    int err;
 
     in = (uint8_t *) malloc(iLen);
     out = (uint8_t *) malloc(oLen);
     memset(in, 0, iLen);
-    memset(out, 0, 2*iLen);
+    memset(out, 0, 2 * iLen);
 
-    uint8_t tmp[] = {0x30, 0x30, 0x31, 0x31, 0x32, 0x32, 0x33, 0x33,
-                     0x34, 0x34, 0x35, 0x35, 0x36, 0x36, 0x37, 0x37,
-                     0x30, 0x30, 0x31, 0x31, 0x30, 0x30, 0x31, 0x31,
-                     0x42, 0x42, 0x43, 0x43, 0x44, 0x44, 0x45, 0x45};//"0011223344556677889900AABBCCDDEE";
+    uint8_t tmp[] = {0x30, 0x30, 0x31, 0x31, 0x32, 0x32, 0x33, 0x33, 0x34, 0x34, 0x35, 0x35, 0x36, 0x36, 0x37, 0x37,
+                     0x38, 0x38, 0x39, 0x39, 0x40, 0x40, 0x41, 0x41, 0x42, 0x42, 0x43, 0x43, 0x44, 0x44, 0x45,
+                     0x45};//"0011223344556677889900AABBCCDDEE";
 
     strncpy((char *) in, (const char *) tmp, 32);
 
     compress::Compressor compressor(new compress::CompressorConfig(iLen, &oLen));
-    compressor.process(in, out);
+    err = compressor.process(in, out);
+
+    if (!err)
+        printf("Compression successful\n");
+    else
+        printf("Compression unsuccessful. ERROR CODE:%d\n", err);
 
     for (int i = 0; i < 64; i++) {
         printf("%02x:", out[i]);
