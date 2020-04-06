@@ -43,7 +43,7 @@
 #define I8		(OP_ACTION_INDEX | OP_AMOUNT_8)
 #define N0		(OP_ACTION_NOOP  | OP_AMOUNT_0)
 
-static uint8_t templateCombinations[OPS_MAX][5] = { /* params size in bits */
+static uint8_t compTemplates[OPS_MAX][5] = { /* params size in bits */
         { I8, N0, N0, N0, 0x19 }, /* 8 */
         { I4, I4, N0, N0, 0x18 }, /* 18 */
         { I4, I2, I2, N0, 0x17 }, /* 25 */
@@ -70,4 +70,33 @@ static uint8_t templateCombinations[OPS_MAX][5] = { /* params size in bits */
         { D4, I2, D2, N0, 0x02 }, /* 56 */
         { D4, D2, I2, N0, 0x01 }, /* 56 */
         { D8, N0, N0, N0, 0x00 }, /* 64 */
+};
+
+static uint8_t decompTemplates[OPS_MAX][4] = {
+        { D8, N0, N0, N0 },
+        { D4, D2, I2, N0 },
+        { D4, I2, D2, N0 },
+        { D4, I2, I2, N0 },
+        { D4, I4, N0, N0 },
+        { D2, I2, D4, N0 },
+        { D2, I2, D2, I2 },
+        { D2, I2, I2, D2 },
+        { D2, I2, I2, I2 },
+        { D2, I2, I4, N0 },
+        { I2, D2, D4, N0 },
+        { I2, D4, I2, N0 },
+        { I2, D2, I2, D2 },
+        { I2, D2, I2, I2 },
+        { I2, D2, I4, N0 },
+        { I2, I2, D4, N0 },
+        { I2, I2, D2, I2 },
+        { I2, I2, I2, D2 },
+        { I2, I2, I2, I2 },
+        { I2, I2, I4, N0 },
+        { I4, D4, N0, N0 },
+        { I4, D2, I2, N0 },
+        { I4, I2, D2, N0 },
+        { I4, I2, I2, N0 },
+        { I4, I4, N0, N0 },
+        { I8, N0, N0, N0 }
 };

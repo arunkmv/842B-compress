@@ -153,7 +153,7 @@ int compress::Compressor::addEndTemplate() {
 
 int compress::Compressor::addTemplate(int op) {
     int i, err, n = 0;
-    uint8_t *templateToAdd = templateCombinations[op];
+    uint8_t *templateToAdd = compTemplates[op];
     bool inval = false;
 
     if (op >= OPS_MAX)

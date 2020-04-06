@@ -48,5 +48,9 @@ namespace compress {
         }
 
         int processTemplate();
+
+        int processOPData(u_int8_t n);
+
+        int processOPIndex(uint8_t n);
     };
 }

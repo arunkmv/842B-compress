@@ -50,7 +50,7 @@ bool compress::HashManager::checkIndex(int b, int index) {
 }
 
 bool compress::HashManager::checkTemplate(int op) {
-    uint8_t *templateToCheck = templateCombinations[op];
+    uint8_t *templateToCheck = compTemplates[op];
     int i, n = 0;
     bool match;
 

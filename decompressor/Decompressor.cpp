@@ -64,7 +64,43 @@ int compress::Decompressor::splitLoad(uint64_t *data, uint8_t bits, int splitAt)
     return 0;
 }
 
+int compress::Decompressor::processOPIndex(uint8_t n) {
+    return 0;
+}
+
+int compress::Decompressor::processOPData(u_int8_t n) {
+    return 0;
+}
+
 int compress::Decompressor::processTemplate() {
+    int i, err = 0;
+
+    if (this->currOp >= OPS_MAX)
+        return -EINVAL;
+
+    for (i = 0; i < 4; i++) {
+        uint8_t op = decompTemplates[this->currOp][i];
+
+#ifdef DEBUG
+        printf("op is %x\n", op);
+#endif
+
+        switch (op & OP_ACTION) {
+            case OP_ACTION_DATA:
+                err = processOPData(op & OP_AMOUNT);
+                break;
+            case OP_ACTION_INDEX:
+                err = processOPIndex(op & OP_ACTION);
+                break;
+            case OP_ACTION_NOOP:
+                break;
+            default:
+                printf("Invalid op %x\n", op);
+                return -EINVAL;
+        }
+        if (err)
+            return err;
+    }
     return 0;
 }
 
@@ -110,30 +146,30 @@ int compress::Decompressor::process(const uint8_t *input, uint8_t *output) {
 
                 break;
             case OP_ZEROS:
-                if(this->outputLength < 8)
+                if (this->outputLength < 8)
                     return -ENOSPC;
 
                 memset(this->out, 0, 8);
                 this->out += 8;
-                this->outputLength -=8;
+                this->outputLength -= 8;
 
                 break;
             case OP_SHORT_DATA:
                 err = loadNextBits(&bytes, SHORT_DATA_BITS);
-                if(err)
+                if (err)
                     return err;
 
-                if(!bytes || bytes > SHORT_DATA_BITS_MAX)
+                if (!bytes || bytes > SHORT_DATA_BITS_MAX)
                     return -EINVAL;
 
-                while(bytes-- > 0) {
+                while (bytes-- > 0) {
                     err = loadNextBits(&temp, 8);
-                    if(err)
+                    if (err)
                         return err;
 
-                    *this->out = (uint8_t)temp;
+                    *this->out = (uint8_t) temp;
                     this->out += 8;
-                    this->outputLength -=8;
+                    this->outputLength -= 8;
                 }
 
                 break;
@@ -142,7 +178,7 @@ int compress::Decompressor::process(const uint8_t *input, uint8_t *output) {
                 break;
             default:
                 err = processTemplate();
-                if(err)
+                if (err)
                     return err;
 
                 break;
