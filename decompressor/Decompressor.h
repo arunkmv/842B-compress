@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cerrno>
 #include <climits>
+#include <cstring>
 #include "../common/CompressorConfig.h"
 #include "../common/842defs.h"
 #include "../common/crc32.h"

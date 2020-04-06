@@ -53,11 +53,11 @@ int compress::Decompressor::splitLoad(uint64_t *data, uint8_t bits, int splitAt)
         return -EINVAL;
 
     err = loadNextBits(&temp, bits - splitAt);
-    if(err)
+    if (err)
         return err;
 
     err = loadNextBits(data, splitAt);
-    if(err)
+    if (err)
         return err;
 
     *data |= temp << splitAt;
@@ -72,13 +72,40 @@ int compress::Decompressor::process(const uint8_t *input, uint8_t *output) {
     this->outputLength = *this->config->outputLength;
 
     int err;
-    uint64_t maxLength = this->outputLength;
+    uint64_t repeat, maxLength = this->outputLength;
     *(this->config->outputLength) = 0;
 
     do {
         err = loadNextBits(&(this->currOp), OP_BITS);
         if (err)
             return err;
+
+#ifdef DEBUG
+        printf("template is %lx\n", (unsigned long)op);
+#endif
+
+        switch (this->currOp) {
+            case OP_REPEAT:
+                err = loadNextBits(&repeat, REPEAT_BITS);
+                if (err)
+                    return err;
+
+                if (this->out == out)
+                    return -EINVAL;
+
+                repeat++;
+
+                if (repeat * 8 > this->outputLength)
+                    return -ENOSPC;
+
+                while (repeat-- > 0) {
+                    memcpy(this->out, this->out - 8, 8);
+                    this->out += 8;
+                    this->outputLength = 8;
+                }
+
+                break;
+        }
     } while (this->currOp != OP_END);
     return 0;
 }
