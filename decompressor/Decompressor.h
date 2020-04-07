@@ -52,5 +52,7 @@ namespace compress {
         int processOPData(u_int8_t n);
 
         int processOPIndex(uint8_t n);
+
+        int processIndex(uint8_t n, uint8_t bits, uint64_t bufferSize);
     };
 }

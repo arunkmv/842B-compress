@@ -21,7 +21,7 @@ uint64_t compress::Compressor::getInputData(int n, int bits) {
 int compress::Compressor::addToOutput(uint64_t data, uint8_t bits) {
     int nBits = this->currBit + bits;
     //Offset of bit position to the nearest multiple of 8
-    int offset = (((nBits - 1) | 7) + 1) - nBits;
+    int offset = round_up(nBits, 8) - nBits;
     uint64_t outVal;
     uint8_t *outPtr = this->out;
 

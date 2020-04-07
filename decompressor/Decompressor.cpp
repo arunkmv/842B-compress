@@ -14,7 +14,7 @@ int compress::Decompressor::loadNextBits(u_int64_t *data, uint8_t bits) {
     }
 
     if (nBits > 64)
-        splitLoad(data, bits, 32);
+        return splitLoad(data, bits, 32);
     else if (this->inputLength < 8 && nBits > 32 && nBits <= 56)
         return splitLoad(data, bits, 16);
     else if (this->inputLength < 4 && nBits > 16 && nBits <= 24)
@@ -24,15 +24,15 @@ int compress::Decompressor::loadNextBits(u_int64_t *data, uint8_t bits) {
         return -EOVERFLOW;
 
     if (nBits <= 8)
-        *data = *in >> (8 - nBits);
+        *data = *(this->in) >> (8 - nBits);
     else if (nBits <= 16)
-        *data = asBigEndian<uint16_t>(*(uint16_t *) in) >> (16 - nBits);
+        *data = asBigEndian<uint16_t>(*(uint16_t *) (this->in)) >> (16 - nBits);
     else if (nBits <= 32)
-        *data = asBigEndian<uint32_t>(*(uint32_t *) in) >> (32 - nBits);
+        *data = asBigEndian<uint32_t>(*(uint32_t *) (this->in)) >> (32 - nBits);
     else
-        *data = asBigEndian<uint64_t>(*(uint64_t *) in) >> (64 - nBits);
+        *data = asBigEndian<uint64_t>(*(uint64_t *) (this->in)) >> (64 - nBits);
 
-    *data &= ((1 << (bits - 1)) - 1);
+    *data &= ((uint64_t)1 << (bits)) - 1;
 
     this->currBit += bits;
 
@@ -64,8 +64,53 @@ int compress::Decompressor::splitLoad(uint64_t *data, uint8_t bits, int splitAt)
     return 0;
 }
 
-int compress::Decompressor::processOPIndex(uint8_t n) {
+int compress::Decompressor::processIndex(uint8_t n, uint8_t bits, uint64_t bufferSize) {
+    uint64_t index, offset, totalBytes = round_down(this->out - this->outbeg, 8);
+    int err;
+
+    err = loadNextBits(&index, bits);
+    if (err)
+        return err;
+
+    offset = index * n;
+
+    if (totalBytes > bufferSize) {
+        uint64_t bufferSection = round_down(totalBytes, bufferSize);
+        uint64_t bufferPosition = totalBytes - bufferSection;
+
+        if (offset >= bufferPosition)
+            bufferSection -= bufferSize;
+
+        offset += bufferSection;
+    }
+
+    if (offset + n > totalBytes) {
+        printf("index%x %lx points beyond end %lx\n", n,
+               (unsigned long) offset, (unsigned long) totalBytes);
+        return -EINVAL;
+    }
+
+    if (n != 2 && n != 4 && n != 8)
+        printf("invalid index size %x\n", n);
+
+    memcpy(this->out, &this->outbeg[offset], n);
+    this->out += n;
+    this->outputLength -= n;
+
     return 0;
+}
+
+int compress::Decompressor::processOPIndex(uint8_t n) {
+    switch (n) {
+        case 2:
+            return processIndex(2, I2_BITS, I2_FIFO_SIZE);
+        case 4:
+            return processIndex(4, I4_BITS, I4_FIFO_SIZE);
+        case 8:
+            return processIndex(8, I8_BITS, I8_FIFO_SIZE);
+        default:
+            return -EINVAL;
+    }
 }
 
 int compress::Decompressor::processOPData(u_int8_t n) {
@@ -81,13 +126,13 @@ int compress::Decompressor::processOPData(u_int8_t n) {
 
     switch (n) {
         case 2:
-            *(uint16_t *)(this->out) = asBigEndian<uint16_t >(data);
+            *(uint16_t *) (this->out) = asBigEndian<uint16_t>(data);
             break;
         case 4:
-            *(uint32_t *)(this->out) = asBigEndian<uint32_t >(data);
+            *(uint32_t *) (this->out) = asBigEndian<uint32_t>(data);
             break;
         case 8:
-            *(uint64_t *)(this->out) = asBigEndian<uint64_t >(data);
+            *(uint64_t *) (this->out) = asBigEndian<uint64_t>(data);
             break;
         default:
             return -EINVAL;
@@ -148,7 +193,7 @@ int compress::Decompressor::process(const uint8_t *input, uint8_t *output) {
             return err;
 
 #ifdef DEBUG
-        printf("template is %lx\n", (unsigned long)op);
+        printf("template is %lx\n", (unsigned long)this->currOp);
 #endif
 
         switch (this->currOp) {
@@ -211,5 +256,6 @@ int compress::Decompressor::process(const uint8_t *input, uint8_t *output) {
                 break;
         }
     } while (this->currOp != OP_END);
+
     return 0;
 }

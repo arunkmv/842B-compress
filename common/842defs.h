@@ -43,6 +43,10 @@
 #define I8		(OP_ACTION_INDEX | OP_AMOUNT_8)
 #define N0		(OP_ACTION_NOOP  | OP_AMOUNT_0)
 
+#define __round_mask(x, y) ((__typeof__(x))((y)-1))
+#define round_up(x, y) ((((x)-1) | __round_mask(x, y))+1)
+#define round_down(x, y) ((x) & ~__round_mask(x, y))
+
 static uint8_t compTemplates[OPS_MAX][5] = { /* params size in bits */
         { I8, N0, N0, N0, 0x19 }, /* 8 */
         { I4, I4, N0, N0, 0x18 }, /* 18 */
@@ -71,6 +75,10 @@ static uint8_t compTemplates[OPS_MAX][5] = { /* params size in bits */
         { D4, D2, I2, N0, 0x01 }, /* 56 */
         { D8, N0, N0, N0, 0x00 }, /* 64 */
 };
+
+#define I2_FIFO_SIZE	(2 * (1 << I2_BITS))
+#define I4_FIFO_SIZE	(4 * (1 << I4_BITS))
+#define I8_FIFO_SIZE	(8 * (1 << I8_BITS))
 
 static uint8_t decompTemplates[OPS_MAX][4] = {
         { D8, N0, N0, N0 },
