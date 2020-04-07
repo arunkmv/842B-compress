@@ -32,7 +32,7 @@ int compress::Decompressor::loadNextBits(u_int64_t *data, uint8_t bits) {
     else
         *data = asBigEndian<uint64_t>(*(uint64_t *) (this->in)) >> (64 - nBits);
 
-    *data &= ((uint64_t)1 << (bits)) - 1;
+    *data &= ((uint64_t) 1 << (bits)) - 1;
 
     this->currBit += bits;
 
@@ -65,7 +65,7 @@ int compress::Decompressor::splitLoad(uint64_t *data, uint8_t bits, int splitAt)
 }
 
 int compress::Decompressor::processIndex(uint8_t n, uint8_t bits, uint64_t bufferSize) {
-    uint64_t index, offset, totalBytes = round_down(this->out - this->outbeg, 8);
+    uint64_t index, offset, totalBytes = round_down(abs(this->out - this->outbeg), 8);
     int err;
 
     err = loadNextBits(&index, bits);
@@ -113,7 +113,7 @@ int compress::Decompressor::processOPIndex(uint8_t n) {
     }
 }
 
-int compress::Decompressor::processOPData(u_int8_t n) {
+int compress::Decompressor::processOPData(uint8_t n) {
     uint64_t data;
     int err;
 
@@ -162,7 +162,7 @@ int compress::Decompressor::processTemplate() {
                 err = processOPData(op & OP_AMOUNT);
                 break;
             case OP_ACTION_INDEX:
-                err = processOPIndex(op & OP_ACTION);
+                err = processOPIndex(op & OP_AMOUNT);
                 break;
             case OP_ACTION_NOOP:
                 break;
@@ -184,16 +184,18 @@ int compress::Decompressor::process(const uint8_t *input, uint8_t *output) {
     this->outputLength = *this->config->outputLength;
 
     int err;
-    uint64_t repeat, bytes, temp, maxLength = this->outputLength;
+    uint64_t repeat, bytes, temp, crc, maxLength = this->outputLength;
     *(this->config->outputLength) = 0;
 
     do {
+        printf("olen: %llu\n", this->outputLength);
+
         err = loadNextBits(&(this->currOp), OP_BITS);
         if (err)
             return err;
 
 #ifdef DEBUG
-        printf("template is %lx\n", (unsigned long)this->currOp);
+        printf("template is %lx\n", (unsigned long) this->currOp);
 #endif
 
         switch (this->currOp) {
@@ -256,6 +258,20 @@ int compress::Decompressor::process(const uint8_t *input, uint8_t *output) {
                 break;
         }
     } while (this->currOp != OP_END);
+
+    err = loadNextBits(&crc, CRC_BITS);
+    if (err)
+        return err;
+
+    if (crc != (uint64_t)crc32_be(0, this->outbeg, maxLength - this->outputLength)) {
+        printf("CRC mismatch in decompressed data\n");
+        return -EINVAL;
+    }
+
+    if ((maxLength - this->outputLength) > UINT_MAX)
+        return -ENOSPC;
+
+    *(this->config->outputLength) = maxLength - this->outputLength;
 
     return 0;
 }
