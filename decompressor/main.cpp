@@ -25,7 +25,7 @@ int main() {
                      0x44, 0x44, 0x54, 0x5f, 0x26, 0xb0, 0xef, 0x22,
                      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00} ;//"0011223344556677889900AABBCCDDEE";
 
-    strncpy((char *) in, (const char *) tmp, iLen);
+    memcpy((void *) in, (const void *) tmp, iLen);
 
     compress::Decompressor decompressor(new compress::CompressorConfig(iLen, &oLen));
     err = decompressor.process(in, out);
@@ -35,7 +35,7 @@ int main() {
     else
         printf("Decompression unsuccessful. ERROR CODE:%d\n", err);
 
-    for (int i = 0; i < 32; i++) {
+    for (int i = 0; i < oLen; i++) {
         printf("%02x:", out[i]);
     }
 

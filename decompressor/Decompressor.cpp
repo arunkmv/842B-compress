@@ -188,7 +188,6 @@ int compress::Decompressor::process(const uint8_t *input, uint8_t *output) {
     *(this->config->outputLength) = 0;
 
     do {
-        printf("olen: %llu\n", this->outputLength);
 
         err = loadNextBits(&(this->currOp), OP_BITS);
         if (err)

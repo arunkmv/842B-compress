@@ -23,7 +23,7 @@ int main() {
                      0x38, 0x38, 0x39, 0x39, 0x40, 0x40, 0x41, 0x41, 0x42, 0x42, 0x43, 0x43, 0x44, 0x44, 0x45,
                      0x45};//"0011223344556677889900AABBCCDDEE";
 
-    strncpy((char *) in, (const char *) tmp, iLen);
+    memcpy((void *) in, (const void *) tmp, iLen);
 
     compress::Compressor compressor(new compress::CompressorConfig(iLen, &oLen));
     err = compressor.process(in, out);
