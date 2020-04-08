@@ -10,11 +10,11 @@ static uint8_t bit_mask[8] = {0x00, 0x80, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe};
 
 uint64_t compress::Compressor::getInputData(int n, int bits) {
     if (bits == 16)
-        return asBigEndian(*((uint16_t *) (this->in + n)));
+        return this->config->asBigEndian(*((uint16_t *) (this->in + n)));
     else if (bits == 32)
-        return asBigEndian(*((uint32_t *) (this->in + n)));
+        return this->config->asBigEndian(*((uint32_t *) (this->in + n)));
     else if (bits == 64)
-        return asBigEndian(*((uint64_t *) (this->in + n)));
+        return this->config->asBigEndian(*((uint64_t *) (this->in + n)));
     return 0;
 }
 
@@ -48,19 +48,19 @@ int compress::Compressor::addToOutput(uint64_t data, uint8_t bits) {
     if (nBits <= 8)
         *outPtr = outVal | data;
     else if (nBits <= 16)
-        *(uint16_t *) outPtr = asBigEndian<uint16_t>(outVal << 8 | data);
+        *(uint16_t *) outPtr = this->config->asBigEndian<uint16_t>(outVal << 8 | data);
     else if (nBits <= 24)
-        *(uint32_t *) outPtr = asBigEndian<uint32_t>(outVal << 24 | data << 8);
+        *(uint32_t *) outPtr = this->config->asBigEndian<uint32_t>(outVal << 24 | data << 8);
     else if (nBits <= 32)
-        *(uint32_t *) outPtr = asBigEndian<uint32_t>(outVal << 24 | data);
+        *(uint32_t *) outPtr = this->config->asBigEndian<uint32_t>(outVal << 24 | data);
     else if (nBits <= 40)
-        *(uint64_t *) outPtr = asBigEndian<uint64_t>(outVal << 56 | data << 24);
+        *(uint64_t *) outPtr = this->config->asBigEndian<uint64_t>(outVal << 56 | data << 24);
     else if (nBits <= 48)
-        *(uint64_t *) outPtr = asBigEndian<uint64_t>(outVal << 56 | data << 16);
+        *(uint64_t *) outPtr = this->config->asBigEndian<uint64_t>(outVal << 56 | data << 16);
     else if (nBits <= 56)
-        *(uint64_t *) outPtr = asBigEndian<uint64_t>(outVal << 56 | data << 8);
+        *(uint64_t *) outPtr = this->config->asBigEndian<uint64_t>(outVal << 56 | data << 8);
     else
-        *(uint64_t *) outPtr = asBigEndian<uint64_t>(outVal << 56 | data);
+        *(uint64_t *) outPtr = this->config->asBigEndian<uint64_t>(outVal << 56 | data);
     //printf("%llx\n", *(u_int64_t *) outPtr);
 
     this->currBit = nBits;
@@ -218,7 +218,7 @@ int compress::Compressor::addTemplate(int op) {
             return err;
 
         if (inval) {
-            printf("Invalid template %x op %d : %x %x %x %x\n",
+            fprintf(stderr, "Invalid template %x op %d : %x %x %x %x\n",
                    op, i, templateToAdd[0], templateToAdd[1], templateToAdd[2], templateToAdd[3]);
             return -EINVAL;
         }
@@ -227,7 +227,7 @@ int compress::Compressor::addTemplate(int op) {
     }
 
     if (n != 8) {
-        printf("Invalid template %x op %d : %x %x %x %x\n",
+        fprintf(stderr, "Invalid template %x op %d : %x %x %x %x\n",
                op, n, templateToAdd[0], templateToAdd[1], templateToAdd[2], templateToAdd[3]);
         return -EINVAL;
     }

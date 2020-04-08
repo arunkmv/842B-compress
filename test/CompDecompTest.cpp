@@ -34,8 +34,10 @@ int main() {
 
     if (!err)
         printf("Compression successful\n");
-    else
-        printf("Compression unsuccessful. ERROR CODE:%d\n", err);
+    else {
+        fprintf(stderr, "Compression unsuccessful. ERROR CODE:%d\n", err);
+        return -1;
+    }
 
     for (int i = 0; i < 64; i++) {
         printf("%02x:", out[i]);
@@ -48,8 +50,10 @@ int main() {
 
     if (!err)
         printf("Decompression successful\n");
-    else
-        printf("Decompression unsuccessful. ERROR CODE:%d\n", err);
+    else {
+        fprintf(stderr, "Decompression unsuccessful. ERROR CODE:%d\n", err);
+        return -1;
+    }
 
     for (int i = 0; i < iLen; i++) {
         printf("%02x:", decompressed[i]);
@@ -66,4 +70,5 @@ int main() {
 
     free(in);
     free(out);
+    return 0;
 }

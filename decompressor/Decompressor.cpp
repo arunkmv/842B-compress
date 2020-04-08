@@ -9,7 +9,7 @@ int compress::Decompressor::loadNextBits(u_int64_t *data, uint8_t bits) {
     int nBits = this->currBit + bits;
 
     if (bits > 64) {
-        printf("load next bits invalid bit count %u\n", bits);
+        fprintf(stderr, "Loading next bits: invalid bit count %u\n", bits);
         return -EINVAL;
     }
 
@@ -26,11 +26,11 @@ int compress::Decompressor::loadNextBits(u_int64_t *data, uint8_t bits) {
     if (nBits <= 8)
         *data = *(this->in) >> (8 - nBits);
     else if (nBits <= 16)
-        *data = asBigEndian<uint16_t>(*(uint16_t *) (this->in)) >> (16 - nBits);
+        *data = this->config->asBigEndian<uint16_t>(*(uint16_t *) (this->in)) >> (16 - nBits);
     else if (nBits <= 32)
-        *data = asBigEndian<uint32_t>(*(uint32_t *) (this->in)) >> (32 - nBits);
+        *data = this->config->asBigEndian<uint32_t>(*(uint32_t *) (this->in)) >> (32 - nBits);
     else
-        *data = asBigEndian<uint64_t>(*(uint64_t *) (this->in)) >> (64 - nBits);
+        *data = this->config->asBigEndian<uint64_t>(*(uint64_t *) (this->in)) >> (64 - nBits);
 
     *data &= ((uint64_t) 1 << (bits)) - 1;
 
@@ -85,7 +85,7 @@ int compress::Decompressor::processIndex(uint8_t n, uint8_t bits, uint64_t buffe
     }
 
     if (offset + n > totalBytes) {
-        printf("index%x %lx points beyond end %lx\n", n,
+        fprintf(stderr, "index%x %lx points beyond end %lx\n", n,
                (unsigned long) offset, (unsigned long) totalBytes);
         return -EINVAL;
     }
@@ -126,13 +126,13 @@ int compress::Decompressor::processOPData(uint8_t n) {
 
     switch (n) {
         case 2:
-            *(uint16_t *) (this->out) = asBigEndian<uint16_t>(data);
+            *(uint16_t *) (this->out) = this->config->asBigEndian<uint16_t>(data);
             break;
         case 4:
-            *(uint32_t *) (this->out) = asBigEndian<uint32_t>(data);
+            *(uint32_t *) (this->out) = this->config->asBigEndian<uint32_t>(data);
             break;
         case 8:
-            *(uint64_t *) (this->out) = asBigEndian<uint64_t>(data);
+            *(uint64_t *) (this->out) = this->config->asBigEndian<uint64_t>(data);
             break;
         default:
             return -EINVAL;
@@ -167,7 +167,7 @@ int compress::Decompressor::processTemplate() {
             case OP_ACTION_NOOP:
                 break;
             default:
-                printf("Invalid op %x\n", op);
+                fprintf(stderr, "Invalid op %x\n", op);
                 return -EINVAL;
         }
         if (err)
@@ -263,7 +263,7 @@ int compress::Decompressor::process(const uint8_t *input, uint8_t *output) {
         return err;
 
     if (crc != (uint64_t)crc32_be(0, this->outbeg, maxLength - this->outputLength)) {
-        printf("CRC mismatch in decompressed data\n");
+        fprintf(stderr, "CRC mismatch in decompressed data\n");
         return -EINVAL;
     }
 
