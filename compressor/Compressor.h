@@ -3,6 +3,7 @@
 #include <climits>
 #include "HashManager.h"
 #include "../common/crc32.h"
+#include "../common/CompressorConfig.h"
 
 namespace compress {
 

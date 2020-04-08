@@ -1,3 +1,6 @@
+#ifndef _842_DEFINITIONS_H_
+#define _842_DEFINITIONS_H_
+
 #include <stdint-gcc.h>
 
 //#define DEBUG 1
@@ -108,3 +111,5 @@ static uint8_t decompTemplates[OPS_MAX][4] = {
         { I4, I4, N0, N0 },
         { I8, N0, N0, N0 }
 };
+
+#endif

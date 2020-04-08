@@ -1,3 +1,6 @@
+#ifndef _COMPRESSOR_CONFIG_H_
+#define _COMPRESSOR_CONFIG_H_
+
 #include <stdlib.h>
 
 using namespace std;
@@ -16,3 +19,5 @@ namespace compress {
         static bool findEndianness();
     };
 }
+
+#endif
